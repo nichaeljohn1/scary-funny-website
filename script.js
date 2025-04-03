@@ -8,8 +8,9 @@ document.addEventListener('DOMContentLoaded', () => {
     let jumpscareTriggered = false;
     let audioEnabled = false;
 
-    // Disable scrolling initially
+    // Disable scrolling initially and add overlay class
     document.body.style.overflow = 'hidden';
+    document.body.classList.add('overlay-active');
 
     // Handle enter overlay
     const enterOverlay = document.getElementById('enter-overlay');
@@ -27,10 +28,11 @@ document.addEventListener('DOMContentLoaded', () => {
         enterOverlay.style.transition = 'opacity 0.5s';
         enterOverlay.style.opacity = '0';
         
-        // Re-enable scrolling after overlay fades
+        // Re-enable scrolling and remove overlay class after fade
         setTimeout(() => {
             enterOverlay.remove();
             document.body.style.overflow = '';
+            document.body.classList.remove('overlay-active');
         }, 500);
     });
 
