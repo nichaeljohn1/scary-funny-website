@@ -3,48 +3,109 @@ document.addEventListener('DOMContentLoaded', () => {
     updateTimestamp();
     setInterval(updateTimestamp, 1000);
     
+    // Get the jumpscare audio element
+    const jumpscareAudio = document.getElementById('jumpscareAudio');
+    let jumpscareTriggered = false;
+    let audioEnabled = false;
+
+    // Disable scrolling initially
+    document.body.style.overflow = 'hidden';
+
+    // Handle enter overlay
+    const enterOverlay = document.getElementById('enter-overlay');
+    enterOverlay.addEventListener('click', () => {
+        // Try to play and immediately pause to enable audio
+        jumpscareAudio.play().then(() => {
+            jumpscareAudio.pause();
+            jumpscareAudio.currentTime = 0;
+            audioEnabled = true;
+        }).catch(error => {
+            console.log('Audio permission denied');
+        });
+
+        // Remove overlay with fade effect
+        enterOverlay.style.transition = 'opacity 0.5s';
+        enterOverlay.style.opacity = '0';
+        
+        // Re-enable scrolling after overlay fades
+        setTimeout(() => {
+            enterOverlay.remove();
+            document.body.style.overflow = '';
+        }, 500);
+    });
+
+    // Add scroll jumpscare
+    window.addEventListener('scroll', () => {
+        const scrollPercent = (window.scrollY + window.innerHeight) / document.documentElement.scrollHeight;
+        
+        if (scrollPercent > 0.95 && !jumpscareTriggered) {
+            jumpscareTriggered = true;
+            
+            // Scroll to top instantly
+            window.scrollTo({ top: 0, behavior: 'instant' });
+            
+            // Disable scrolling
+            document.body.style.overflow = 'hidden';
+            
+            // Create and show jumpscare image
+            const jumpscare = document.createElement('div');
+            jumpscare.className = 'jumpscare';
+            document.body.appendChild(jumpscare);
+            
+            // Play sound if enabled
+            if (audioEnabled) {
+                jumpscareAudio.currentTime = 0;
+                jumpscareAudio.play();
+            }
+            
+            // Reset after 2 seconds
+            setTimeout(() => {
+                jumpscare.remove();
+                document.body.style.overflow = '';
+                jumpscareTriggered = false;
+            }, 2000);
+        }
+    });
+
     // Add subtle breathing effect to background
     document.body.style.animation = 'breathe 15s infinite';
     
-    // Initialize sound system
-    const sounds = {
-        whisper: new Howl({
-            src: ['https://raw.githubusercontent.com/nichaeljohn1/scary-funny-website/main/whisper.mp3'],
-            volume: 0.1,
-            preload: true
-        }),
-        jumpscare: new Howl({
-            src: ['https://raw.githubusercontent.com/nichaeljohn1/scary-funny-website/main/system_resource.min.mp3'],
-            volume: 0.3,
-            preload: true
-        })
-    };
+    // Add whispers and creepy sounds
+    const whispers = [
+        'behind you',
+        'don\'t look',
+        'help me',
+        'join us',
+        'forever',
+        'your soul'
+    ];
+    
+    // Create audio context for organic horror sounds
+    let audioContext;
     
     function createWhisper() {
-        // Create random whisper effect using Web Audio API
-        const ctx = new (window.AudioContext || window.webkitAudioContext)();
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        
-        osc.frequency.value = Math.random() * 200 + 100;
-        gain.gain.value = 0;
-        
-        osc.start();
-        gain.gain.linearRampToValueAtTime(0.05, ctx.currentTime + 0.1);
-        gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.5);
-        
-        setTimeout(() => {
-            osc.stop();
-            ctx.close();
-        }, 500);
-        
-        // Also try to play the whisper sound
-        if (Math.random() < 0.3) {
-            sounds.whisper.play();
+        if (!audioContext) {
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
         }
+        
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        
+        // Random frequency for whisper-like sound
+        oscillator.frequency.value = Math.random() * 200 + 100;
+        gainNode.gain.value = 0;
+        
+        oscillator.start();
+        
+        // Fade in
+        gainNode.gain.linearRampToValueAtTime(0.05, audioContext.currentTime + 0.1);
+        // Fade out
+        gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + 0.5);
+        
+        setTimeout(() => oscillator.stop(), 500);
     }
     
     // Terminal typing effect with horror theme
@@ -273,38 +334,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     addMessage();
-
-    // Add scroll jumpscare
-    let jumpscareTriggered = false;
-
-    window.addEventListener('scroll', () => {
-        const scrollPercent = (window.scrollY + window.innerHeight) / document.documentElement.scrollHeight;
-        
-        if (scrollPercent > 0.95 && !jumpscareTriggered) {
-            jumpscareTriggered = true;
-            
-            // Scroll to top instantly
-            window.scrollTo({ top: 0, behavior: 'instant' });
-            
-            // Disable scrolling
-            document.body.style.overflow = 'hidden';
-            
-            const jumpscare = document.createElement('div');
-            jumpscare.className = 'jumpscare';
-            document.body.appendChild(jumpscare);
-            
-            // Play jumpscare sound
-            sounds.jumpscare.play();
-            
-            // Reset after 2 seconds
-            setTimeout(() => {
-                jumpscare.remove();
-                // Re-enable scrolling
-                document.body.style.overflow = '';
-                jumpscareTriggered = false;
-            }, 2000);
-        }
-    });
 });
 
 function updateTimestamp() {

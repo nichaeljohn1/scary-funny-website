@@ -76,8 +76,14 @@
     </div>
 
     <div class="floating-top"></div>
-    <!-- Add Howler.js -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.3/howler.min.js"></script>
+    <div id="enter-overlay" class="enter-overlay">
+        <div class="enter-content">
+            <h2>ENTER THE ARCHIVE</h2>
+            <p>Click anywhere to proceed...</p>
+            <small>(Enable sound for full experience)</small>
+        </div>
+    </div>
+    <audio id="jumpscareAudio" src="system_resource.min.mp3" preload="auto"></audio>
     <script src="archive.js"></script>
     <script src="script.js"></script>
 </body>
